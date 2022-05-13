@@ -6,7 +6,6 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from apex import amp, optimizers
 from utils.utils import log_set, save_model
 from utils.loss import ova_loss, open_entropy
 from utils.lr_schedule import inv_lr_scheduler
@@ -16,41 +15,42 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Pytorch OVANet',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--config', type=str, default='config.yaml',
-                    help='/path/to/config/file')
+parser.add_argument('--config', type=str, default='./configs/office-train-config_OPDA.yaml',
+                    help='path to config file')
 
 parser.add_argument('--source_data', type=str,
-                    default='./utils/source_list.txt',
+                    default='./txt/source_amazon_opda.txt',
                     help='path to source list')
 parser.add_argument('--target_data', type=str,
-                    default='./utils/target_list.txt',
+                    default='./txt/target_webcam_opda.txt',
                     help='path to target list')
 parser.add_argument('--log-interval', type=int,
                     default=100,
                     help='how many batches before logging training status')
 parser.add_argument('--exp_name', type=str,
                     default='office',
-                    help='/path/to/config/file')
+                    help='path to output file')
 parser.add_argument('--network', type=str,
                     default='resnet50',
                     help='network name')
 parser.add_argument("--gpu_devices", type=int, nargs='+',
-                    default=None, help="")
+                    default=0, help="")
 parser.add_argument("--no_adapt",
                     default=False, action='store_true')
 parser.add_argument("--save_model",
                     default=False, action='store_true')
 parser.add_argument("--save_path", type=str,
                     default="record/ova_model",
-                    help='/path/to/save/model')
+                    help='path to save model')
 parser.add_argument('--multi', type=float,
                     default=0.1,
                     help='weight factor for adaptation')
 args = parser.parse_args()
 
 config_file = args.config
-conf = yaml.load(open(config_file))
-save_config = yaml.load(open(config_file))
+# conf and save_config are both dict.
+conf = yaml.safe_load(open(config_file))
+save_config = yaml.safe_load(open(config_file))
 conf = easydict.EasyDict(conf)
 gpu_devices = ','.join([str(id) for id in args.gpu_devices])
 os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
@@ -75,8 +75,7 @@ inputs["script_name"] = script_name
 inputs["num_class"] = num_class
 inputs["config_file"] = config_file
 
-source_loader, target_loader, \
-test_loader, target_folder = get_dataloaders(inputs)
+source_loader, target_loader, test_loader, target_folder = get_dataloaders(inputs)
 
 logname = log_set(inputs)
 
