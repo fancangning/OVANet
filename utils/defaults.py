@@ -2,7 +2,6 @@ import torch
 from torch import nn
 import torchvision.transforms as transforms
 import torch.optim as optim
-from apex import amp, optimizers
 from data_loader.get_loader import get_loader, get_loader_label
 from .utils import get_model_mme
 from models.basenet import ResClassifier_MME

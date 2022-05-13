@@ -115,7 +115,7 @@ def train():
         img_t = Variable(img_t.cuda())
         opt_g.zero_grad()
         opt_c.zero_grad()
-        C2.module.weight_norm()
+        C2.weight_norm()
 
         ## Source loss calculation
         feat = G(img_s)
@@ -146,8 +146,7 @@ def train():
             all += args.multi * ent_open
             log_values.append(ent_open.item())
             log_string += "Loss Open Target: {:.6f}"
-        with amp.scale_loss(all, [opt_g, opt_c]) as scaled_loss:
-            scaled_loss.backward()
+        all.backward()
         opt_g.step()
         opt_c.step()
         opt_g.zero_grad()
